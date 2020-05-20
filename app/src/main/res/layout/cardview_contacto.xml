@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardview_contacto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/activity_vertical_margin"
+    card_view:cardCornerRadius="@dimen/corner_radius_cardview">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_below="@id/miacctionbar">
+<ImageView
+    android:id="@+id/img_fotocv"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:src="@drawable/mought"
+    />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/btn_like"
+            android:layout_width="38sp"
+            android:layout_height="38sp"
+            android:background="@drawable/calabera"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginLeft="@dimen/left">
+            <TextView
+                android:id="@+id/tv_nombrecv"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:text="@string/pnombre"
+                android:textSize="@dimen/nombre_cardview"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/tv_telefonocv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ptelefono"
+                android:textSize="@dimen/nombre_cardview"
+                android:textStyle="bold"
+                />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
+</androidx.cardview.widget.CardView>

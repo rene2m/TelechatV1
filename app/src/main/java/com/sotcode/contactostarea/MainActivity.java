@@ -4,19 +4,15 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
 import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.material.tabs.TabLayout;
-import com.sotcode.contactostarea.adapter.ContactoAdapter;
 import com.sotcode.contactostarea.adapter.PageAdapter;
-import com.sotcode.contactostarea.fragment.PerfilFragment;
-import com.sotcode.contactostarea.fragment.RecyclerViewFragment;
-import com.sotcode.contactostarea.pojo.Contacto;
+import com.sotcode.contactostarea.vista_fragment.PerfilFragment;
+import com.sotcode.contactostarea.vista_fragment.RecyclerViewFragment;
 
 import java.util.ArrayList;
 

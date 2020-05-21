@@ -1,4 +1,4 @@
-package com.sotcode.contactostarea.fragment;
+package com.sotcode.contactostarea.vista_fragment;
 
 import android.os.Bundle;
 

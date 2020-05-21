@@ -19,20 +19,22 @@
     android:layout_height="match_parent"
     android:src="@drawable/mought"
     />
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+     >
         <ImageButton
             android:id="@+id/btn_like"
             android:layout_width="38sp"
             android:layout_height="38sp"
-            android:background="@drawable/calabera"/>
+            android:background="@drawable/calabera"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"/>
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginLeft="@dimen/left">
+          android:layout_centerHorizontal="true">
             <TextView
                 android:id="@+id/tv_nombrecv"
                 android:layout_width="wrap_content"
@@ -48,9 +50,18 @@
                 android:textSize="@dimen/nombre_cardview"
                 android:textStyle="bold"
                 />
-        </LinearLayout>
 
-    </LinearLayout>
+        </LinearLayout>
+        <TextView
+            android:id="@+id/tv_likes"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:text="@string/p_likes"
+            android:textSize="@dimen/nombre_cardview"
+            android:textStyle="bold"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"/>
+    </RelativeLayout>
 
 </LinearLayout>
 </androidx.cardview.widget.CardView>

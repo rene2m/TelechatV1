@@ -1,4 +1,4 @@
-package com.sotcode.contactostarea.fragment;
+package com.sotcode.contactostarea.vista_fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,38 +14,37 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sotcode.contactostarea.R;
 import com.sotcode.contactostarea.adapter.ContactoAdapter;
 import com.sotcode.contactostarea.pojo.Contacto;
+import com.sotcode.contactostarea.presentador.IRecyclerViewFragmentPresentador;
+import com.sotcode.contactostarea.presentador.RecyclerViewFragmentPresentador;
 
 import java.util.ArrayList;
 
-public class RecyclerViewFragment extends Fragment {
+public class RecyclerViewFragment extends Fragment implements IRecyclerViewFragmentView{
     ArrayList<Contacto> contactos;
     private RecyclerView listacontactos;
+    private IRecyclerViewFragmentPresentador presentador;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v =inflater.inflate(R.layout.fragment_recyclerview,container,false);
-        listacontactos=(RecyclerView) v.findViewById(R.id.reciclerview_contactos);
-
+           listacontactos=(RecyclerView) v.findViewById(R.id.reciclerview_contactos);
+           presentador = new RecyclerViewFragmentPresentador(this, getContext()) ;
+        return v;
+    }
+    @Override
+    public void generarLinearLayoutVertical() {
         LinearLayoutManager llm = new LinearLayoutManager(getActivity()); //esto lo que hace que se muestre como una linea o lista podria mostrarse como un grid es es solo configurarlo
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         listacontactos.setLayoutManager(llm);
-        inicializarListaContactos();
-        inicializarAdaptador();
-        return v;
-        //return super.onCreateView(inflater, container, savedInstanceState);
     }
-    public ContactoAdapter adapter;
-    private void inicializarAdaptador(){
-        adapter=new ContactoAdapter(contactos,getActivity());
+    @Override
+    public ContactoAdapter crearAdaptador(ArrayList<Contacto> contactos) {
+        ContactoAdapter adapter;
+         adapter=new ContactoAdapter(contactos,getActivity());
+        return adapter;
+    }
+    @Override
+    public void inicializarAdaptadorRv(ContactoAdapter adapter) {
         listacontactos.setAdapter(adapter);
-    }
-    public void inicializarListaContactos(){
-        contactos=new ArrayList<Contacto>();
-        contactos.add(new Contacto(R.drawable.editar_calabera,"rene alberto","451254","rene@gmail.com"));
-        contactos.add(new Contacto(R.drawable.computer,"jose mari","451784548","jose@gmail.com"));
-        contactos.add(new Contacto(R.drawable.mought,"andrea picazo","47845254","andrea@gmail.com"));
-        contactos.add(new Contacto(R.drawable.pizza,"ruben dario","458545854","ruben@gmail.com"));
-        contactos.add(new Contacto(R.drawable.editar_choper,"esteban arze ","478551254","esteba@gmail.com"));
-
     }
 }

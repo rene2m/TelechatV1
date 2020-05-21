@@ -2,6 +2,7 @@ package com.sotcode.contactostarea.db;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+
 import android.content.Context;
 import android.content.QuickViewConstants;
 import android.database.Cursor;

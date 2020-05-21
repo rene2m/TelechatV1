@@ -1,0 +1,622 @@
+Index: app/src/main/java/com/sotcode/contactostarea/vista_fragment/IRecyclerViewFragmentView.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/vista_fragment/IRecyclerViewFragmentView.java	(date 1589995368916)
++++ app/src/main/java/com/sotcode/contactostarea/vista_fragment/IRecyclerViewFragmentView.java	(date 1589995368916)
+@@ -0,0 +1,12 @@
++package com.sotcode.contactostarea.vista_fragment;
++
++import com.sotcode.contactostarea.adapter.ContactoAdapter;
++import com.sotcode.contactostarea.pojo.Contacto;
++
++import java.util.ArrayList;
++
++public interface IRecyclerViewFragmentView {
++public void generarLinearLayoutVertical();
++public ContactoAdapter crearAdaptador(ArrayList<Contacto> contactos);
++public void inicializarAdaptadorRv(ContactoAdapter adapter);
++}
+Index: app/src/main/res/values/strings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/strings.xml	(revision bb70730fdcc5daf9f7a3a4feb0d9d496946e28a6)
++++ app/src/main/res/values/strings.xml	(date 1590025300413)
+@@ -6,6 +6,8 @@
+     <string name="pnombre">nombre</string>
+     <string name="ptelefono">telefono</string>
+     <string name="pemail">email</string>
++    <string name="p_likes">0 likes</string>
++    <string name="likes">likes</string>
+ 
+     <!-- TODO: Remove or change this placeholder text -->
+     <string name="hello_blank_fragment">Hello blank fragment</string>
+Index: app/src/main/java/com/sotcode/contactostarea/presentador/IRecyclerViewFragmentPresentador.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/presentador/IRecyclerViewFragmentPresentador.java	(date 1589996456492)
++++ app/src/main/java/com/sotcode/contactostarea/presentador/IRecyclerViewFragmentPresentador.java	(date 1589996456492)
+@@ -0,0 +1,6 @@
++package com.sotcode.contactostarea.presentador;
++
++public interface IRecyclerViewFragmentPresentador {
++    public void obtenerContactoBaseDatos();
++    public void mostrarContactosRV();
++}
+Index: app/src/main/java/com/sotcode/contactostarea/db/BaseDatos.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/db/BaseDatos.java	(date 1590025687702)
++++ app/src/main/java/com/sotcode/contactostarea/db/BaseDatos.java	(date 1590025687702)
+@@ -0,0 +1,108 @@
++package com.sotcode.contactostarea.db;
++
++import android.content.ContentResolver;
++import android.content.ContentValues;
++import android.content.Context;
++import android.content.QuickViewConstants;
++import android.database.Cursor;
++import android.database.sqlite.SQLiteDatabase;
++import android.database.sqlite.SQLiteOpenHelper;
++
++import androidx.annotation.Nullable;
++
++import com.sotcode.contactostarea.pojo.Contacto;
++
++import java.util.ArrayList;
++
++public class BaseDatos  extends SQLiteOpenHelper {
++    private Context context;
++    public BaseDatos(@Nullable Context context) {
++        super(context, ConstantesBaseDatos.DATABASE_NAME, null, ConstantesBaseDatos.DATABASE_VERSION);
++        this.context=context;
++    }
++
++    @Override
++    public void onCreate(SQLiteDatabase db) {
++        String queryCrearTablaContacto = "CREATE TABLE " + ConstantesBaseDatos.TABLE_CONTACTS + "(" +
++                ConstantesBaseDatos.TABLE_CONTACTS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
++                ConstantesBaseDatos.TABLE_CONTACTS_NOMBRE + " TEXT, " +
++                ConstantesBaseDatos.TABLE_CONTACTS_TELEFONO + " TEXT, " +
++                ConstantesBaseDatos.TABLE_CONTACTS_EMAIL + " TEXT, " +
++                ConstantesBaseDatos.TABLE_CONTACTS_FOTO + " INTEGER" +
++                ")";
++        String queryCrearTablaLikesContacto = "CREATE TABLE " + ConstantesBaseDatos.TABLE_LIKES_CONTACT + "(" +
++                ConstantesBaseDatos.TABLE_LIKES_CONTACT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
++                ConstantesBaseDatos.TABLE_LIKES_CONTACT_ID_CONTACTO + " INTEGER, " +
++                ConstantesBaseDatos.TABLE_LIKES_CONTACT_NUMERO_LIKES + " INTEGER, " +
++                "FOREIGN KEY (" + ConstantesBaseDatos.TABLE_LIKES_CONTACT_ID_CONTACTO + ") " +
++                "REFERENCES " + ConstantesBaseDatos.TABLE_CONTACTS + "(" + ConstantesBaseDatos.TABLE_CONTACTS_ID + ")" +
++                ")";
++
++        db.execSQL(queryCrearTablaContacto);
++        db.execSQL(queryCrearTablaLikesContacto);
++    }
++
++    @Override
++    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
++        db.execSQL("DROP TABLE IF EXIST " + ConstantesBaseDatos.TABLE_CONTACTS);
++        db.execSQL("DROP TABLE IF EXIST " + ConstantesBaseDatos.TABLE_LIKES_CONTACT);
++        onCreate(db);
++
++    }
++    public ArrayList<Contacto> obtenerTodosLosContactos(){
++        ArrayList<Contacto> contactos = new ArrayList<>();
++        String querry = "SELECT * FROM " + ConstantesBaseDatos.TABLE_CONTACTS;
++        SQLiteDatabase db = this.getWritableDatabase();
++        Cursor registros = db.rawQuery(querry,null);
++        while (registros.moveToNext()){
++            Contacto contactoActual = new Contacto();
++            contactoActual.setId(registros.getInt(0));
++            contactoActual.setNombre(registros.getString(1));
++            contactoActual.setTelefono(registros.getString(2));
++            contactoActual.setEmail(registros.getString(3));
++            contactoActual.setFoto(registros.getInt(4));
++
++             String queryLikes = "SELECT COUNT("+ConstantesBaseDatos.TABLE_LIKES_CONTACT_NUMERO_LIKES+") as likes " +
++                    " FROM " + ConstantesBaseDatos.TABLE_LIKES_CONTACT +
++                    " WHERE " + ConstantesBaseDatos.TABLE_LIKES_CONTACT_ID_CONTACTO + "=" + contactoActual.getId();
++
++            Cursor registrosLikes = db.rawQuery(queryLikes, null);
++            if (registrosLikes.moveToNext()){
++                contactoActual.setLike(registrosLikes.getInt(0));
++            }else {
++                contactoActual.setLike(0);
++            }
++
++            contactos.add(contactoActual);
++        }
++        db.close();
++        return contactos;
++    }
++    public void insertarContacto (ContentValues contentValues){
++         SQLiteDatabase db = this.getWritableDatabase();
++         db.insert(ConstantesBaseDatos.TABLE_CONTACTS,null, contentValues);
++         db.close();
++
++    }
++    public void insertarlikecontactos(ContentValues contentValues){
++        SQLiteDatabase db = this.getWritableDatabase();
++        db.insert(ConstantesBaseDatos.TABLE_LIKES_CONTACT,null,contentValues);
++        db.close();
++    }
++    public int obtenerLikesContacto(Contacto contacto){
++        int likes = 0 ;
++        String query = "SELECT COUNT("+ConstantesBaseDatos.TABLE_LIKES_CONTACT_NUMERO_LIKES+")" +
++                " FROM " + ConstantesBaseDatos.TABLE_LIKES_CONTACT +
++                " WHERE " + ConstantesBaseDatos.TABLE_LIKES_CONTACT_ID_CONTACTO + "="+contacto.getId();
++
++        SQLiteDatabase db = this.getWritableDatabase();
++        Cursor registros = db.rawQuery(query, null);
++
++        if (registros.moveToNext()){
++            likes = registros.getInt(0);
++        }
++
++        db.close();
++        return  likes;
++    }
++}
+Index: app/src/main/java/com/sotcode/contactostarea/db/ConstantesBaseDatos.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/db/ConstantesBaseDatos.java	(date 1590012497449)
++++ app/src/main/java/com/sotcode/contactostarea/db/ConstantesBaseDatos.java	(date 1590012497449)
+@@ -0,0 +1,19 @@
++package com.sotcode.contactostarea.db;
++
++public final class ConstantesBaseDatos {
++    public static final String DATABASE_NAME = "contactos";
++    public static final int DATABASE_VERSION = 1;
++
++    public static final String TABLE_CONTACTS           = "contacto";
++    public static final String TABLE_CONTACTS_ID        = "id";
++    public static final String TABLE_CONTACTS_NOMBRE    = "nombre";
++    public static final String TABLE_CONTACTS_TELEFONO  = "telefono";
++    public static final String TABLE_CONTACTS_EMAIL     = "email";
++    public static final String TABLE_CONTACTS_FOTO      = "foto";
++
++    public static final String TABLE_LIKES_CONTACT = "contacto_likes";
++    public static final String TABLE_LIKES_CONTACT_ID = "id";
++    public static final String TABLE_LIKES_CONTACT_ID_CONTACTO = "id_contacto";
++    public static final String TABLE_LIKES_CONTACT_NUMERO_LIKES = "numero_likes";
++
++}
+Index: app/src/main/java/com/sotcode/contactostarea/MainActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/MainActivity.java	(revision bb70730fdcc5daf9f7a3a4feb0d9d496946e28a6)
++++ app/src/main/java/com/sotcode/contactostarea/MainActivity.java	(date 1589994906364)
+@@ -4,19 +4,15 @@
+ import androidx.appcompat.app.AppCompatActivity;
+ import androidx.appcompat.widget.Toolbar;
+ import androidx.fragment.app.Fragment;
+-import androidx.recyclerview.widget.LinearLayoutManager;
+-import androidx.recyclerview.widget.RecyclerView;
+ import androidx.viewpager.widget.ViewPager;
+ 
+ import android.os.Build;
+ import android.os.Bundle;
+ 
+ import com.google.android.material.tabs.TabLayout;
+-import com.sotcode.contactostarea.adapter.ContactoAdapter;
+ import com.sotcode.contactostarea.adapter.PageAdapter;
+-import com.sotcode.contactostarea.fragment.PerfilFragment;
+-import com.sotcode.contactostarea.fragment.RecyclerViewFragment;
+-import com.sotcode.contactostarea.pojo.Contacto;
++import com.sotcode.contactostarea.vista_fragment.PerfilFragment;
++import com.sotcode.contactostarea.vista_fragment.RecyclerViewFragment;
+ 
+ import java.util.ArrayList;
+ 
+Index: app/src/main/java/com/sotcode/contactostarea/presentador/RecyclerViewFragmentPresentador.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/presentador/RecyclerViewFragmentPresentador.java	(date 1590002996189)
++++ app/src/main/java/com/sotcode/contactostarea/presentador/RecyclerViewFragmentPresentador.java	(date 1590002996189)
+@@ -0,0 +1,35 @@
++package com.sotcode.contactostarea.presentador;
++
++import android.content.Context;
++
++import com.sotcode.contactostarea.adapter.ContactoAdapter;
++import com.sotcode.contactostarea.db.ConstructorContactos;
++import com.sotcode.contactostarea.pojo.Contacto;
++import com.sotcode.contactostarea.vista_fragment.IRecyclerViewFragmentView;
++
++import java.util.ArrayList;
++
++public class RecyclerViewFragmentPresentador implements IRecyclerViewFragmentPresentador {
++    private IRecyclerViewFragmentView iRecyclerViewFragmentView;
++    private Context context;
++    private ArrayList<Contacto> contactos;
++    private ConstructorContactos constructorContactos;
++    public RecyclerViewFragmentPresentador(IRecyclerViewFragmentView iRecyclerViewFragmentView, Context context){
++            this.iRecyclerViewFragmentView= iRecyclerViewFragmentView;
++            this.context=context;
++            obtenerContactoBaseDatos();
++    }
++
++    @Override
++    public void obtenerContactoBaseDatos() {
++        constructorContactos= new ConstructorContactos(context);
++        contactos = constructorContactos.obtenerDatos();
++        mostrarContactosRV();
++    }
++
++    @Override
++    public void mostrarContactosRV() {
++        iRecyclerViewFragmentView.inicializarAdaptadorRv(iRecyclerViewFragmentView.crearAdaptador(contactos));
++        iRecyclerViewFragmentView.generarLinearLayoutVertical();
++    }
++}
+Index: app/src/main/java/com/sotcode/contactostarea/db/ConstructorContactos.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/db/ConstructorContactos.java	(date 1590024687812)
++++ app/src/main/java/com/sotcode/contactostarea/db/ConstructorContactos.java	(date 1590024687812)
+@@ -0,0 +1,69 @@
++package com.sotcode.contactostarea.db;
++
++import android.content.ContentValues;
++import android.content.Context;
++
++import com.sotcode.contactostarea.R;
++import com.sotcode.contactostarea.pojo.Contacto;
++
++import java.util.ArrayList;
++
++public class ConstructorContactos {
++    private static final int LIKE = 1;
++    private Context context;
++    public ConstructorContactos(Context context){
++        this.context=context;
++    }
++    public ArrayList<Contacto> obtenerDatos(){
++        /* ArrayList<Contacto> contactos = new ArrayList<>();
++        contactos.add(new Contacto(R.drawable.editar_calabera,"rene alberto","451254","rene@gmail.com", 4));
++        contactos.add(new Contacto(R.drawable.computer,"jose mari","451784548","jose@gmail.com", 5));
++        contactos.add(new Contacto(R.drawable.mought,"andrea picazo","47845254","andrea@gmail.com", 8));
++        contactos.add(new Contacto(R.drawable.pizza,"ruben dario","458545854","ruben@gmail.com", 20));
++        contactos.add(new Contacto(R.drawable.editar_choper,"esteban arze ","478551254","esteba@gmail.com", 515));
++       return contactos;*/
++        BaseDatos db = new BaseDatos(context);
++        insertarTresContactos(db);
++        return  db.obtenerTodosLosContactos();
++    }
++    public void insertarTresContactos ( BaseDatos db ){
++        ContentValues contentValues = new ContentValues();
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_NOMBRE, "rene alberto");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_TELEFONO, "65167018");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_EMAIL, "rene.mamani.sto@gmail.com");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_FOTO, R.drawable.editar_choper);
++        db.insertarContacto(contentValues);
++
++        contentValues = new ContentValues();
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_NOMBRE, "anai salgado");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_TELEFONO, "78569586");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_EMAIL, "ancode@gmail.com");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_FOTO, R.drawable.editar_calabera);
++        db.insertarContacto(contentValues);
++
++        contentValues = new ContentValues();
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_NOMBRE, "jose paredes");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_TELEFONO, "67856978");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_EMAIL, "jose_puto@gmail.com");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_FOTO, R.drawable.pizza);
++        db.insertarContacto(contentValues);
++
++        contentValues = new ContentValues();
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_NOMBRE, "joaquin mendosa");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_TELEFONO, "7856985");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_EMAIL, "chapo_gusman@gmail.com");
++        contentValues.put(ConstantesBaseDatos.TABLE_CONTACTS_FOTO, R.drawable.pizza);
++        db.insertarContacto(contentValues);
++    }
++    public void darLikeContacto(Contacto contacto){
++        BaseDatos db = new BaseDatos(context);
++        ContentValues contentValues = new ContentValues();
++        contentValues.put(ConstantesBaseDatos.TABLE_LIKES_CONTACT_ID_CONTACTO, contacto.getId());
++        contentValues.put(ConstantesBaseDatos.TABLE_LIKES_CONTACT_NUMERO_LIKES , LIKE);
++        db.insertarlikecontactos(contentValues);
++    }
++    public int obtenerLikeContacto(Contacto contacto){
++        BaseDatos db = new BaseDatos(context);
++        return  db.obtenerLikesContacto(contacto);
++    }
++}
+Index: app/src/main/res/layout/cardview_contacto.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/cardview_contacto.xml	(revision bb70730fdcc5daf9f7a3a4feb0d9d496946e28a6)
++++ app/src/main/res/layout/cardview_contacto.xml	(date 1589986871219)
+@@ -19,20 +19,22 @@
+     android:layout_height="match_parent"
+     android:src="@drawable/mought"
+     />
+-    <LinearLayout
++    <RelativeLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+-        android:orientation="horizontal">
++     >
+         <ImageButton
+             android:id="@+id/btn_like"
+             android:layout_width="38sp"
+             android:layout_height="38sp"
+-            android:background="@drawable/calabera"/>
++            android:background="@drawable/calabera"
++            android:layout_alignParentLeft="true"
++            android:layout_centerVertical="true"/>
+         <LinearLayout
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:orientation="vertical"
+-            android:layout_marginLeft="@dimen/left">
++          android:layout_centerHorizontal="true">
+             <TextView
+                 android:id="@+id/tv_nombrecv"
+                 android:layout_width="wrap_content"
+@@ -48,9 +50,18 @@
+                 android:textSize="@dimen/nombre_cardview"
+                 android:textStyle="bold"
+                 />
++
+         </LinearLayout>
+-
+-    </LinearLayout>
++        <TextView
++            android:id="@+id/tv_likes"
++            android:layout_width="wrap_content"
++            android:layout_height="45dp"
++            android:text="@string/p_likes"
++            android:textSize="@dimen/nombre_cardview"
++            android:textStyle="bold"
++            android:layout_alignParentRight="true"
++            android:layout_centerVertical="true"/>
++    </RelativeLayout>
+ 
+ </LinearLayout>
+ </androidx.cardview.widget.CardView>
+\ No newline at end of file
+Index: app/src/main/java/com/sotcode/contactostarea/pojo/Contacto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/pojo/Contacto.java	(revision bb70730fdcc5daf9f7a3a4feb0d9d496946e28a6)
++++ app/src/main/java/com/sotcode/contactostarea/pojo/Contacto.java	(date 1590009650616)
+@@ -1,15 +1,22 @@
+ package com.sotcode.contactostarea.pojo;
+ 
+ public class Contacto {
++    private int id ;
+     private String nombre;
+     private String telefono;
+     private String email;
+     private int foto;
+-    public Contacto( int foto ,String nombre,String telefono ,String email) {
++    private int like;
++    public Contacto(int foto, String nombre, String telefono, String email, int like) {
+         this.foto=foto;
+         this.nombre= nombre;
+         this.telefono=telefono;
+         this.email=email;
++        this.like = like;
++    }
++
++    public Contacto() {
++
+     }
+ 
+     public String getNombre() {
+@@ -43,4 +50,20 @@
+     public void setFoto(int foto) {
+         this.foto = foto;
+     }
++
++    public int getLike() {
++        return like;
++    }
++
++    public void setLike(int like) {
++        this.like = like;
++    }
++
++    public int getId() {
++        return id;
++    }
++
++    public void setId(int id) {
++        this.id = id;
++    }
+ }
+Index: app/src/main/res/layout/fragment_perfil.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_perfil.xml	(revision bb70730fdcc5daf9f7a3a4feb0d9d496946e28a6)
++++ app/src/main/res/layout/fragment_perfil.xml	(date 1589994906183)
+@@ -3,7 +3,7 @@
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+-    tools:context=".fragment.PerfilFragment">
++    tools:context=".vista_fragment.PerfilFragment">
+ 
+     <!-- TODO: Update blank fragment layout -->
+     <TextView
+Index: app/src/main/java/com/sotcode/contactostarea/fragment/PerfilFragment.java
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/fragment/PerfilFragment.java	(revision bb70730fdcc5daf9f7a3a4feb0d9d496946e28a6)
++++ app/src/main/java/com/sotcode/contactostarea/vista_fragment/PerfilFragment.java	(date 1589994905875)
+@@ -1,4 +1,4 @@
+-package com.sotcode.contactostarea.fragment;
++package com.sotcode.contactostarea.vista_fragment;
+ 
+ import android.os.Bundle;
+ 
+Index: app/src/main/java/com/sotcode/contactostarea/fragment/RecyclerViewFragment.java
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/fragment/RecyclerViewFragment.java	(revision bb70730fdcc5daf9f7a3a4feb0d9d496946e28a6)
++++ app/src/main/java/com/sotcode/contactostarea/vista_fragment/RecyclerViewFragment.java	(date 1590000710211)
+@@ -1,4 +1,4 @@
+-package com.sotcode.contactostarea.fragment;
++package com.sotcode.contactostarea.vista_fragment;
+ 
+ import android.os.Bundle;
+ import android.view.LayoutInflater;
+@@ -14,38 +14,37 @@
+ import com.sotcode.contactostarea.R;
+ import com.sotcode.contactostarea.adapter.ContactoAdapter;
+ import com.sotcode.contactostarea.pojo.Contacto;
++import com.sotcode.contactostarea.presentador.IRecyclerViewFragmentPresentador;
++import com.sotcode.contactostarea.presentador.RecyclerViewFragmentPresentador;
+ 
+ import java.util.ArrayList;
+ 
+-public class RecyclerViewFragment extends Fragment {
++public class RecyclerViewFragment extends Fragment implements IRecyclerViewFragmentView{
+     ArrayList<Contacto> contactos;
+     private RecyclerView listacontactos;
++    private IRecyclerViewFragmentPresentador presentador;
+     @Nullable
+     @Override
+     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+         View v =inflater.inflate(R.layout.fragment_recyclerview,container,false);
+-        listacontactos=(RecyclerView) v.findViewById(R.id.reciclerview_contactos);
+-
++           listacontactos=(RecyclerView) v.findViewById(R.id.reciclerview_contactos);
++           presentador = new RecyclerViewFragmentPresentador(this, getContext()) ;
++        return v;
++    }
++    @Override
++    public void generarLinearLayoutVertical() {
+         LinearLayoutManager llm = new LinearLayoutManager(getActivity()); //esto lo que hace que se muestre como una linea o lista podria mostrarse como un grid es es solo configurarlo
+         llm.setOrientation(LinearLayoutManager.VERTICAL);
+         listacontactos.setLayoutManager(llm);
+-        inicializarListaContactos();
+-        inicializarAdaptador();
+-        return v;
+-        //return super.onCreateView(inflater, container, savedInstanceState);
+     }
+-    public ContactoAdapter adapter;
+-    private void inicializarAdaptador(){
+-        adapter=new ContactoAdapter(contactos,getActivity());
++    @Override
++    public ContactoAdapter crearAdaptador(ArrayList<Contacto> contactos) {
++        ContactoAdapter adapter;
++         adapter=new ContactoAdapter(contactos,getActivity());
++        return adapter;
++    }
++    @Override
++    public void inicializarAdaptadorRv(ContactoAdapter adapter) {
+         listacontactos.setAdapter(adapter);
+-    }
+-    public void inicializarListaContactos(){
+-        contactos=new ArrayList<Contacto>();
+-        contactos.add(new Contacto(R.drawable.editar_calabera,"rene alberto","451254","rene@gmail.com"));
+-        contactos.add(new Contacto(R.drawable.computer,"jose mari","451784548","jose@gmail.com"));
+-        contactos.add(new Contacto(R.drawable.mought,"andrea picazo","47845254","andrea@gmail.com"));
+-        contactos.add(new Contacto(R.drawable.pizza,"ruben dario","458545854","ruben@gmail.com"));
+-        contactos.add(new Contacto(R.drawable.editar_choper,"esteban arze ","478551254","esteba@gmail.com"));
+-
+     }
+ }
+Index: app/src/main/java/com/sotcode/contactostarea/adapter/ContactoAdapter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/sotcode/contactostarea/adapter/ContactoAdapter.java	(revision bb70730fdcc5daf9f7a3a4feb0d9d496946e28a6)
++++ app/src/main/java/com/sotcode/contactostarea/adapter/ContactoAdapter.java	(date 1590025220494)
+@@ -13,13 +13,14 @@
+ import androidx.annotation.NonNull;
+ import androidx.recyclerview.widget.RecyclerView;
+ 
++import com.sotcode.contactostarea.db.ConstructorContactos;
+ import com.sotcode.contactostarea.pojo.Contacto;
+ import com.sotcode.contactostarea.DetalleContacto;
+ import com.sotcode.contactostarea.R;
+ 
+ import java.util.ArrayList;
+ 
+-public class ContactoAdapter  extends RecyclerView.Adapter<ContactoAdapter.ContactoViewHolder>{
++public class  ContactoAdapter  extends RecyclerView.Adapter<ContactoAdapter.ContactoViewHolder>{
+     @NonNull
+     ArrayList<Contacto> contactos;
+     Activity activity;
+@@ -36,11 +37,13 @@
+     }
+ 
+     @Override  //asocia cada elemento de la lista con cada view
+-    public void onBindViewHolder(@NonNull ContactoViewHolder contactoViewHolder, int position) {
++    public void onBindViewHolder(@NonNull final ContactoViewHolder contactoViewHolder, int position) {
+              final Contacto contacto = contactos.get(position);
+              contactoViewHolder.imgfotocv.setImageResource(contacto.getFoto());
+              contactoViewHolder.tvnombrecv.setText(contacto.getNombre());
+              contactoViewHolder.tvtelefoocv.setText(contacto.getTelefono());
++             contactoViewHolder.tvlikes.setText(String.valueOf(contacto.getLike())+"likes");
++
+              contactoViewHolder.imgfotocv.setOnClickListener(new View.OnClickListener() {
+                  @Override
+                  public void onClick(View v) {
+@@ -57,6 +60,10 @@
+                  @Override
+                  public void onClick(View v) {
+                      Toast.makeText(activity,"diste calabera a "+contacto.getNombre(),Toast.LENGTH_SHORT).show();
++
++                     ConstructorContactos constructorContactos = new ConstructorContactos(activity);
++                     constructorContactos.darLikeContacto(contacto);
++                     contactoViewHolder.tvlikes.setText(constructorContactos.obtenerLikeContacto(contacto) + " " + activity.getString(R.string.likes));
+                  }
+              });
+     }
+@@ -71,12 +78,14 @@
+         private TextView  tvnombrecv;
+         private TextView tvtelefoocv;
+         private ImageButton btnLike;
++        private TextView tvlikes;
+         public ContactoViewHolder(@NonNull View itemView) {               //este metodo nos ayuda a castear los views y recivew como parametro un view
+             super(itemView);                      //este es un metod osobreescrito por lo que la variable que recibe como parametro lo tomamos de los views para convertilos en objetos en este pojo
+             imgfotocv     =(ImageView) itemView.findViewById(R.id.img_fotocv);       //castear en la varible creada vamos a almacenar el view casteado es decir convertido en objeto
+             tvnombrecv    =(TextView) itemView.findViewById(R.id.tv_nombrecv);
+             tvtelefoocv   =(TextView) itemView.findViewById(R.id.tv_telefonocv);
+             btnLike       =(ImageButton) itemView.findViewById(R.id.btn_like);
++            tvlikes    =(TextView) itemView.findViewById(R.id.tv_likes);
+          }
+     }
+ }
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/vcs.xml	(date 1589977276628)
++++ .idea/vcs.xml	(date 1589977276628)
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings">
++    <mapping directory="$PROJECT_DIR$" vcs="Git" />
++  </component>
++</project>
+\ No newline at end of file
